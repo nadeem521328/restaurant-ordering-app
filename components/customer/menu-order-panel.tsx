@@ -15,11 +15,12 @@ export function MenuOrderPanel({
 }) {
   const cart = useCart();
   const orderingDisabled = restaurantStatus !== "OPEN";
+  const visibleItems = items.slice(0, 1);
 
   return (
     <>
       <div className="space-y-4">
-        {items.map((item) => {
+        {visibleItems.map((item) => {
           const cartItem = cart.items.find(
             (entry) => entry.menuItemId === item.id
           );
