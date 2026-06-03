@@ -11,6 +11,61 @@ import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 import type { Order, OrderStatus } from "@/types/order";
 import type { RestaurantStatus } from "@/types/restaurant";
 
+function hasValidOrderId(order: Order) {
+  return typeof order.id === "string" && order.id.trim().length > 0;
+}
+
+function uniqueOrdersById(orders: Order[]) {
+  const seenOrderIds = new Set<string>();
+
+  return orders.filter((order) => {
+    if (!hasValidOrderId(order) || seenOrderIds.has(order.id)) {
+      return false;
+    }
+
+    seenOrderIds.add(order.id);
+    return true;
+  });
+}
+
+function insertOrderById(currentOrders: Order[], incomingOrder: Order) {
+  if (!hasValidOrderId(incomingOrder)) {
+    return currentOrders;
+  }
+
+  const existingOrderIndex = currentOrders.findIndex(
+    (order) => order.id === incomingOrder.id
+  );
+
+  if (existingOrderIndex === -1) {
+    return [incomingOrder, ...currentOrders];
+  }
+
+  // Realtime INSERT can arrive more than once around refreshes or resubscribe
+  // timing. Keep one React child per database order ID.
+  const nextOrders = [...currentOrders];
+  nextOrders[existingOrderIndex] = incomingOrder;
+  return nextOrders;
+}
+
+function updateOrderById(currentOrders: Order[], updatedOrder: Order) {
+  if (!hasValidOrderId(updatedOrder)) {
+    return currentOrders;
+  }
+
+  let orderWasUpdated = false;
+  const nextOrders = currentOrders.map((order) => {
+    if (order.id !== updatedOrder.id) {
+      return order;
+    }
+
+    orderWasUpdated = true;
+    return updatedOrder;
+  });
+
+  return orderWasUpdated ? nextOrders : currentOrders;
+}
+
 function playNotification() {
   const legacyWindow = window as Window &
     typeof globalThis & { webkitAudioContext?: typeof AudioContext };
@@ -41,7 +96,7 @@ export function AdminDashboard({
   initialOrders: Order[];
   initialRestaurantStatus: RestaurantStatus;
 }) {
-  const [orders, setOrders] = useState(initialOrders);
+  const [orders, setOrders] = useState(() => uniqueOrdersById(initialOrders));
   const [restaurantStatus, setRestaurantStatus] = useState(
     initialRestaurantStatus
   );
@@ -51,7 +106,7 @@ export function AdminDashboard({
 
   const handleInsert = useCallback(
     (order: Order) => {
-      setOrders((current) => [order, ...current]);
+      setOrders((current) => insertOrderById(current, order));
       if (soundEnabled) {
         playNotification();
       }
@@ -60,11 +115,7 @@ export function AdminDashboard({
   );
 
   const handleUpdate = useCallback((updatedOrder: Order) => {
-    setOrders((current) =>
-      current.map((order) =>
-        order.id === updatedOrder.id ? updatedOrder : order
-      )
-    );
+    setOrders((current) => updateOrderById(current, updatedOrder));
   }, []);
 
   useRealtimeOrders({

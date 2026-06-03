@@ -12,7 +12,7 @@ export const checkoutSchema = z.object({
   address: z
     .string()
     .trim()
-    .min(5, "Enter landmark or address.")
+    .min(3, "Enter landmark or address.")
     .max(250, "Address is too long."),
   notes: z.string().trim().max(250, "Notes are too long.").optional(),
   menuItemId: z.string().uuid("Invalid menu item."),

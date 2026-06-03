@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/use-cart";
@@ -13,33 +13,58 @@ type FormState = {
   customerName: string;
   phone: string;
   address: string;
-  notes: string;
 };
 
 const initialForm: FormState = {
   customerName: "",
   phone: "",
-  address: "",
-  notes: ""
+  address: ""
 };
+
+type FieldErrors = Partial<Record<keyof FormState, string>>;
 
 export function CheckoutForm() {
   const router = useRouter();
   const cart = useCart();
   const [form, setForm] = useState<FormState>(initialForm);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const firstItem = cart.items[0];
-  const canSubmit = useMemo(() => {
-    return (
-      Boolean(firstItem) &&
-      form.customerName.trim().length >= 2 &&
-      form.phone.length === 10 &&
-      form.address.trim().length >= 5 &&
-      !submitting
-    );
-  }, [firstItem, form, submitting]);
+
+  function validateRequiredFields() {
+    const nextErrors: FieldErrors = {};
+
+    if (!form.customerName.trim()) {
+      nextErrors.customerName = "Name is required.";
+    } else if (form.customerName.trim().length < 2) {
+      nextErrors.customerName = "Enter your full name.";
+    }
+
+    if (!form.phone) {
+      nextErrors.phone = "Phone number is required.";
+    } else if (form.phone.length !== 10) {
+      nextErrors.phone = "Enter a valid 10 digit phone number.";
+    }
+
+    if (!form.address.trim()) {
+      nextErrors.address = "Address is required.";
+    } else if (form.address.trim().length < 3) {
+      nextErrors.address = "Enter landmark or address.";
+    }
+
+    setFieldErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  }
+
+  function updateField<FieldName extends keyof FormState>(
+    fieldName: FieldName,
+    value: FormState[FieldName]
+  ) {
+    setForm((current) => ({ ...current, [fieldName]: value }));
+    setFieldErrors((current) => ({ ...current, [fieldName]: undefined }));
+  }
 
   async function placeOrder() {
     setError("");
@@ -49,8 +74,7 @@ export function CheckoutForm() {
       return;
     }
 
-    if (form.phone.length !== 10) {
-      setError("Enter a valid 10 digit phone number.");
+    if (!validateRequiredFields()) {
       return;
     }
 
@@ -63,10 +87,9 @@ export function CheckoutForm() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          customerName: form.customerName,
+          customerName: form.customerName.trim(),
           phone: form.phone,
-          address: form.address,
-          notes: form.notes,
+          address: form.address.trim(),
           menuItemId: firstItem.menuItemId,
           quantity: firstItem.quantity
         })
@@ -144,11 +167,24 @@ export function CheckoutForm() {
           <input
             className="mt-2 min-h-12 w-full rounded-lg border border-gray-200 px-3 text-lg outline-none focus:border-red-700"
             autoComplete="name"
+            aria-invalid={Boolean(fieldErrors.customerName)}
+            aria-describedby={
+              fieldErrors.customerName ? "customer-name-error" : undefined
+            }
+            required
             value={form.customerName}
             onChange={(event) =>
-              setForm({ ...form, customerName: event.target.value })
+              updateField("customerName", event.target.value)
             }
           />
+          {fieldErrors.customerName ? (
+            <p
+              id="customer-name-error"
+              className="mt-2 text-sm font-bold text-red-700"
+            >
+              {fieldErrors.customerName}
+            </p>
+          ) : null}
         </label>
 
         <label className="block">
@@ -159,11 +195,22 @@ export function CheckoutForm() {
             pattern="[0-9]*"
             maxLength={10}
             autoComplete="tel"
+            aria-invalid={Boolean(fieldErrors.phone)}
+            aria-describedby={fieldErrors.phone ? "phone-error" : undefined}
+            required
             value={form.phone}
             onChange={(event) =>
-              setForm({ ...form, phone: onlyDigits(event.target.value).slice(0, 10) })
+              updateField(
+                "phone",
+                onlyDigits(event.target.value).slice(0, 10)
+              )
             }
           />
+          {fieldErrors.phone ? (
+            <p id="phone-error" className="mt-2 text-sm font-bold text-red-700">
+              {fieldErrors.phone}
+            </p>
+          ) : null}
         </label>
 
         <label className="block">
@@ -172,20 +219,24 @@ export function CheckoutForm() {
           </span>
           <textarea
             className="mt-2 min-h-24 w-full resize-none rounded-lg border border-gray-200 px-3 py-3 text-lg outline-none focus:border-red-700"
+            aria-invalid={Boolean(fieldErrors.address)}
+            aria-describedby={
+              fieldErrors.address ? "address-error" : undefined
+            }
+            required
             value={form.address}
             onChange={(event) =>
-              setForm({ ...form, address: event.target.value })
+              updateField("address", event.target.value)
             }
           />
-        </label>
-
-        <label className="block">
-          <span className="text-sm font-bold text-gray-800">Notes</span>
-          <textarea
-            className="mt-2 min-h-20 w-full resize-none rounded-lg border border-gray-200 px-3 py-3 text-lg outline-none focus:border-red-700"
-            value={form.notes}
-            onChange={(event) => setForm({ ...form, notes: event.target.value })}
-          />
+          {fieldErrors.address ? (
+            <p
+              id="address-error"
+              className="mt-2 text-sm font-bold text-red-700"
+            >
+              {fieldErrors.address}
+            </p>
+          ) : null}
         </label>
 
         {error ? (
@@ -196,7 +247,7 @@ export function CheckoutForm() {
 
         <Button
           className="w-full"
-          disabled={!canSubmit}
+          disabled={!firstItem || submitting}
           onClick={placeOrder}
         >
           {submitting ? <Loader2 className="animate-spin" size={20} /> : null}
