@@ -1,4 +1,4 @@
-# Bismillah Palaav Center Ordering App
+# Single Restaurant Ordering App
 
 A full-stack restaurant ordering platform built with **Next.js, TypeScript, Supabase, PostgreSQL, and Vercel**.
 
