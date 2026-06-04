@@ -1,106 +1,162 @@
-# Roast Biryani Ordering
+# Bismillah Palaav Center Ordering App
 
-A lightweight direct ordering MVP for one restaurant. It is built for fast mobile ordering, simple admin operations, and Supabase realtime order updates.
+A full-stack restaurant ordering platform built with **Next.js, TypeScript, Supabase, PostgreSQL, and Vercel**.
 
-## Stack
+The application provides a mobile-friendly customer ordering experience and a protected admin dashboard for managing incoming orders in real time.
 
-- Next.js App Router + TypeScript
-- Tailwind CSS
-- Supabase PostgreSQL
-- Supabase Auth for the two admin accounts
-- Supabase Realtime for live admin orders
-- Vercel-ready deployment
+## Live Demo
 
-## Features
+* Customer App: `<https://bismillah-palaav-center.vercel.app>`
 
-- Guest customer ordering only
-- Dynamic menu from database
-- Cash on Delivery order creation
-- 10 digit phone validation on client and server
-- LocalStorage cart
-- Restaurant status: `OPEN`, `CLOSED`, `SOLD_OUT`
-- Protected admin dashboard
-- Realtime incoming orders with sound button
-- Manual order status updates
+## Overview
+
+This project was built to streamline restaurant operations through a simple direct-ordering workflow.
+
+Customers can place Cash on Delivery (COD) orders without creating accounts, while restaurant staff can monitor and manage orders through a secure admin dashboard with realtime updates.
+
+## Business Context
+
+Developed for:
+
+Bismillah Palaav Center
+Koduru, Krishna, Andhra Pradesh, India
+
+The application is currently deployed and used to manage customer orders and restaurant operations.
+
+## Key Features
+
+### Customer Features
+
+* Mobile-first ordering experience
+* Dynamic menu loaded from database
+* Cart persistence using Local Storage
+* Cash on Delivery checkout
+* Server-side order validation
+* Live restaurant status updates (Open / Closed / Sold Out)
+
+### Admin Features
+
+* Secure admin authentication with Supabase Auth
+* Protected admin dashboard
+* Realtime incoming order updates
+* Order status management
+* Restaurant status controls
+* Customer call integration via `tel:` links
+
+## Tech Stack
+
+| Layer          | Technology                       |
+| -------------- | -------------------------------- |
+| Frontend       | Next.js 16, React, TypeScript    |
+| Styling        | Tailwind CSS                     |
+| Backend        | Next.js API Routes               |
+| Database       | Supabase PostgreSQL              |
+| Authentication | Supabase Auth                    |
+| Authorization  | PostgreSQL RLS + Admin Allowlist |
+| Realtime       | Supabase Realtime                |
+| Validation     | Zod                              |
+| Deployment     | Vercel                           |
+
+## Architecture
+
+```text
+Customer
+   ↓
+Next.js Frontend
+   ↓
+API Routes
+   ↓
+Supabase PostgreSQL
+   ↓
+Realtime Updates
+   ↓
+Admin Dashboard
+```
+
+## Security Highlights
+
+* Server-side order creation
+* Supabase Authentication
+* Row Level Security (RLS)
+* Admin authorization via allowlist table
+* Client and server-side validation
+* Service role key restricted to server-side operations
+
+## Project Structure
+
+```text
+app/
+components/
+hooks/
+lib/
+services/
+database/
+types/
+utils/
+```
 
 ## Setup
 
-1. Install dependencies:
+### Install Dependencies
 
 ```bash
 npm install
 ```
 
-2. Create `.env.local` from `.env.example`:
+### Configure Environment Variables
 
-```bash
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-NEXT_PUBLIC_RESTAURANT_NAME="Roast Biryani House"
-NEXT_PUBLIC_RESTAURANT_PHONE="9876543210"
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_RESTAURANT_NAME=
 ```
 
-Never expose `SUPABASE_SERVICE_ROLE_KEY` in the browser.
-
-3. Run `database/schema.sql` in the Supabase SQL editor.
-
-4. Create two admin users in Supabase Authentication.
-
-5. Add both admins to `public.admins`:
-
-```sql
-insert into public.admins (user_id, name)
-values
-  ('first-auth-user-id', 'Admin 1'),
-  ('second-auth-user-id', 'Admin 2');
-```
-
-6. Start development:
+### Start Development Server
 
 ```bash
 npm run dev
 ```
 
-Customer app: `http://localhost:3000`
-
-Admin login: `http://localhost:3000/admin/login`
-
-## Important Supabase Notes
-
-- Keep email signup disabled unless you intentionally want to add more admins.
-- Only authenticated users listed in `public.admins` can read or update orders.
-- Customers never read order history directly from Supabase.
-- Customer order creation uses the server API route and service role key.
-- Realtime must be enabled for `orders`; the SQL file adds it to the realtime publication.
-
-## Project Structure
-
-```txt
-app/                 Next.js routes and API routes
-components/          Reusable customer, admin, and UI components
-hooks/               Client hooks for cart and realtime
-lib/                 Supabase clients, auth helpers, validation
-services/            Server-side database operations
-types/               Shared TypeScript types
-utils/               Small formatting helpers
-database/            Supabase SQL schema
-public/              Local static assets
-```
-
-## Production Checklist
-
-- Add real Supabase environment variables in Vercel.
-- Create exactly the two required admin users.
-- Confirm Row Level Security policies are active.
-- Test a customer COD order on mobile.
-- Test admin realtime updates in two browser tabs.
-- Replace restaurant phone/name in environment variables.
-
-## First Git Commit
+### Production Build
 
 ```bash
-git init
-git add .
-git commit -m "Initial roast biryani ordering MVP"
+npm run build
+npm run start
 ```
+
+## Deployment
+
+The application is deployed on Vercel and uses Supabase as the production database.
+
+Deployment flow:
+
+```text
+GitHub
+   ↓
+Vercel
+   ↓
+Automatic Production Deployment
+```
+
+## Project Highlights
+
+* Designed a complete customer-to-admin ordering workflow.
+* Implemented realtime operational updates using Supabase Realtime.
+* Secured customer order data using PostgreSQL Row Level Security.
+* Built server-side validation and business rule enforcement.
+* Deployed and maintained a production-ready full-stack application.
+
+## Future Enhancements
+
+* Multiple menu item management
+* Payment gateway integration
+* Customer order tracking
+* Analytics dashboard
+* WhatsApp notifications
+
+## Author
+
+Nadeem Shaik
+
+GitHub: https://github.com/nadeem521328
