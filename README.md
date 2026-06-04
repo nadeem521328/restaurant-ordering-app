@@ -6,7 +6,7 @@ The application provides a mobile-friendly customer ordering experience and a pr
 
 ## Live Demo
 
-* Customer App: `<https://bismillah-palaav-center.vercel.app>`
+* Customer App: `https://bismillah-palaav-center.vercel.app`
 
 ## Overview
 
