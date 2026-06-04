@@ -20,8 +20,7 @@ A lightweight direct ordering MVP for one restaurant. It is built for fast mobil
 - LocalStorage cart
 - Restaurant status: `OPEN`, `CLOSED`, `SOLD_OUT`
 - Protected admin dashboard
-- Realtime incoming orders with sound button
-- Manual order status updates
+
 
 ## Setup
 
