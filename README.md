@@ -19,7 +19,7 @@ Customers can place Cash on Delivery (COD) orders without creating accounts, whi
 Developed for:
 
 Bismillah Palaav Center
-Koduru, Krishna, Andhra Pradesh, India
+Location: Bismillah Palaav Center, Koduru, Krishna, Andhra Pradesh, India,521328.
 
 The application is currently deployed and used to manage customer orders and restaurant operations.
 
